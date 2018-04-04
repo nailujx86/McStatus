@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>McStatus</title>
+    <meta name="description" content="A cool thing made with Glitch">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <style>
+      .gradient {
+        background-image: linear-gradient(15deg, #13547a 0%, #80d0c7 100%);
+      }
+      .newsection {
+        padding-top: 1em;
+        margin-top: 1em;
+        border-top: thin solid rgba(1,1,1,0.2);
+      }
+      .footer-text-grey {
+        color: rgba(255,255,255,0.8);
+      }
+      .fade-enter-active, .fade-leave-active {
+        transition: opacity 0.2s;
+      }
+      .fade-enter, .fade-leave-to {
+        opacity: 0;
+      }
+      .rconarea {
+        font-family: "Courier New", Courier, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <section class="hero is-primary is-fullheight gradient">
+        <div class="hero-body">
+          <div class="container">
+            <form>                    
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" type="text" placeholder="Server adress" v-model="serverAdress">
+                </div>
+                <div class="control">
+                  <input class="input" type="number" min="1" max="99999" placeholder="Port (25565)" v-model="serverPort">
+                </div>
+              </div>
+              
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" type="password" placeholder="Rcon Password" v-model="rconPassword">
+                </div>               
+                <div class="control">
+                  <input class="input" type="number" min="1" max="99999" placeholder="Rcon Port (25575)" v-model="rconPort">
+                </div>
+              </div>
+              
+              <div class="field">
+                <div class="control">
+                  <a class="button is-primary" :disabled="disableButton" @click="query">
+                    Query/Rcon
+                  </a>
+                </div>
+              </div>
+              
+              <transition name="fade" v-for="notification in notifications">
+                <div class="notification" :class="notification.color" v-show="notification.show" v-once>
+                  {{ notification.message }}                                                                                      
+                </div>              
+              </transition>
+            </form>
+            
+            <div class="newsection" v-show="!isEmptyObject(pingData.version)" style="display: none;">
+              <h4 class="title">
+                Server Info
+              </h4>
+              <div class="box">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-64x64">
+                      <img :src="pingData.favicon">
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <div class="content">
+                      <p>
+                        <strong>{{ serverAdress }}</strong>
+                        <br>
+                        {{ pingData.description }}
+                        <br>
+                        <small>{{ pingData.version["name"] }}</small>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="newsection" v-show="!isEmptyObject(pingData.players)" style="display: none;">
+              <h4 class="title">
+                Players
+              </h4>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>UUID</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>UUID</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            
+            <div class="newsection" v-show="rconEnabled" style="display: none;">
+              <h4 class="title">
+                RCON
+              </h4>
+              <div class="field">
+                <div class="control">
+                  <textarea class="textarea rconarea" type="text" v-model="messages" readonly></textarea>
+                </div>
+              </div>
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" type="text" placeholder="Command to send.." v-model="command" @keyup.enter="send_command">
+                </div>
+                <div class="control">
+                  <a class="button is-primary" :disabled="!command.trim()" @click="send_command">
+                    Send
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-foot">
+          <div class="container footer-text-grey has-text-centered">
+            (c) 2018 nailujx86
+          </div>
+        </div>
+      </section>
+    </div>
+    <vue-snotify></vue-snotify>
+    <script src="/app.js"></script>
+  </body>
+</html>
+
