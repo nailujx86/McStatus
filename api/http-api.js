@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require('body-parser');
 const ping = require('mc-hermes');
-const guid = require('../guid');
+const guid = require('../util/guid');
 const Rcon = require('rcon');
 
 router.use(bodyParser.json());

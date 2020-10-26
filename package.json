@@ -13,7 +13,8 @@
     "body-parser": "^1.18.2",
     "mc-hermes": "^0.1.5",
     "rcon": "^1.0.3",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.1.0",
+    "lodash": "^4.17.5"
   },
   "engines": {
     "node": "9.x"

@@ -8,7 +8,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/mcmotd.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <style>
@@ -42,19 +43,19 @@
             <form>                    
               <div class="field has-addons">
                 <div class="control is-expanded">
-                  <input class="input" type="text" placeholder="Server adress" v-model="serverAdress">
+                  <input class="input" type="text" placeholder="Server adress" v-model="serverAdress" value="">
                 </div>
                 <div class="control">
-                  <input class="input" type="number" min="1" max="99999" placeholder="Port (25565)" v-model="serverPort">
+                  <input class="input" type="number" min="1" max="99999" placeholder="Port (25565)" v-model="serverPort" value="">
                 </div>
               </div>
               
               <div class="field has-addons">
                 <div class="control is-expanded">
-                  <input class="input" type="password" placeholder="Rcon Password" v-model="rconPassword">
+                  <input class="input" type="password" placeholder="Rcon Password" v-model="rconPassword" value="">
                 </div>               
                 <div class="control">
-                  <input class="input" type="number" min="1" max="99999" placeholder="Rcon Port (25575)" v-model="rconPort">
+                  <input class="input" type="number" min="1" max="99999" placeholder="Port (25575)" v-model="rconPort" value="">
                 </div>
               </div>
               
@@ -73,6 +74,41 @@
               </transition>
             </form>
             
+            <div class="newsection" v-show="!isEmptyObject(pingData.version)" style="display: none">
+              <div class="level">
+                <div class="level-item has-text-centered">
+                  <div>
+                    <p class="heading">
+                      Players
+                    </p>
+                    <p class="title">
+                      {{ pingData.players.online }} / {{ pingData.players.max }}
+                    </p>
+                  </div>  
+                </div>
+                <div class="level-item has-text-centered">
+                  <div>
+                    <p class="heading">
+                      Version
+                    </p>
+                    <p class="title">
+                      {{ pingData.version.name }}
+                    </p> 
+                  </div>  
+                </div>
+                <div class="level-item has-text-centered">
+                  <div>
+                    <p class="heading">
+                      Protocol
+                    </p>
+                    <p class="title">
+                      {{ pingData.version.protocol }}
+                    </p>
+                  </div>       
+                </div>
+              </div>
+            </div>
+            
             <div class="newsection" v-show="!isEmptyObject(pingData.version)" style="display: none;">
               <h4 class="title">
                 Server Info
@@ -84,22 +120,20 @@
                       <img :src="pingData.favicon">
                     </figure>
                   </div>
-                  <div class="media-content">
+                  <div class="media-content"> 
                     <div class="content">
                       <p>
-                        <strong>{{ serverAdress }}</strong>
+                        <strong>{{ submittedServerAdress }}</strong>
                         <br>
-                        {{ pingData.description }}
-                        <br>
-                        <small>{{ pingData.version["name"] }}</small>
+                        <span v-html="pingData.description"></span>
                       </p>
-                    </div>
+                    </div>                                       
                   </div>
                 </div>
               </div>
             </div>
             
-            <div class="newsection" v-show="!isEmptyObject(pingData.players)" style="display: none;">
+            <div class="newsection" v-show="!isEmptyObject(pingData.players.sample)" style="display: none;">
               <h4 class="title">
                 Players
               </h4>
@@ -118,6 +152,13 @@
                     <th>UUID</th>
                   </tr>
                 </tfoot>
+                <tbody>
+                  <tr v-for="player in pingData.players.sample">
+                    <td><figure class="image is-24x24"><img :src="'https://crafatar.com/avatars/' + player.id + '?overlay=true?size=48'"></figure></td>
+                    <th>{{ player.name }}</th>
+                    <td>{{ player.id }}</td>
+                  </tr>
+                </tbody>
               </table>
             </div>
             
@@ -150,7 +191,6 @@
         </div>
       </section>
     </div>
-    <vue-snotify></vue-snotify>
     <script src="/app.js"></script>
   </body>
 </html>

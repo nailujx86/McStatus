@@ -1,15 +1,20 @@
 const ping = require('mc-hermes');
 const Rcon = require('rcon');
-const guid = require('../guid');
+const guid = require('../util/guid');
+const parser = require('../util/parser');
 
 function socketLogic(io) {
   io.on('connection', (socket) => {
-    
-    
     socket.on('mcping', (args) => {
       ping(args).then((data) => {
-        socket.emit('mcping result', data);
+        parser.motdToHtml(data.description, (err, res) => {
+          if(!err) {
+            data.description = res;
+          }
+          socket.emit('mcping result', data);
+        }); 
       }).catch((error) => {
+        console.log(error);
         socket.emit('mcping error', error);
       });
     });

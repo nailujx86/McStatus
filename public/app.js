@@ -8,11 +8,19 @@ function isEmptyObject(obj) {
     return true;
 }
 
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+};
+
 var socket = io();
 var app = new Vue({
     el: '#app',
     data: {
       serverAdress: "",
+      submittedServerAdress: "",
       serverPort: "",
       rconPassword: "",
       rconPort: "",
@@ -20,7 +28,8 @@ var app = new Vue({
       command: "",
       pingData: {version: {}, players: {}},
       rconEnabled: false,
-      notifications: []
+      notifications: [],
+      updateInterval: null
     },
     methods: {
       query: function() { 
@@ -30,12 +39,15 @@ var app = new Vue({
           this.rconEnabled = false;
           this.messages = "";
         }
+        clearInterval(this.updateInterval);
+        this.submittedServerAdress = this.serverAdress;
+        this.submittedServerPort = this.getServerPort;
         socket.emit('mcping', {server: this.serverAdress, port: this.getServerPort});
       },
       send_command: function() {
         socket.emit('rcon send', {cmd: this.command});
         this.command = "";
-      }
+      }    
     },
     computed: {
       disableButton: function() {
@@ -64,12 +76,17 @@ function showNotification(color, timeout, message) {
   }, timeout);
 }
 
+function update() {
+  socket.emit('mcping', {server: app.submittedServerAdress, port: app.submittedServerPort});
+}
+
 socket.on('mcping result', (data) => {
-  console.log(data);
   app.pingData = data;
+  setTimeout(update, 1000);
 });
 
 socket.on('mcping error', (error) => {
+  console.log(JSON.stringify(error));
   showNotification("is-danger", 4000, "Error pinging " + app.serverAdress + ":" + app.getServerPort);
 });
 
@@ -88,10 +105,18 @@ socket.on('rcon message', (data) => {
 });
 
 socket.on('error', () => {
-  showNotification("is-warning", 4000, "Socket died.. We will try to reconnect you!");
+  clearInterval(app.updateInterval);
+  showNotification("is-warning", 7000, "Connection to socket died.. We will try to reconnect you!");
+  if(app.rconEnabled) app.messages += "Disconnected from remote console.\n";
 });
 
 socket.on('reconnect', () => {
   showNotification("is-success", 4000, "Socket reconnected. :)");
   app.query();
 });
+
+if(getUrlParameter('host') != '') {
+  console.log(getUrlParameter('host'));
+  app.serverAdress = getUrlParameter('host');
+  app.query();
+}
